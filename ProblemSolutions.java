@@ -190,8 +190,8 @@ class ProblemSolutions {
             }
         }
 
-        // YOUR CODE GOES HERE - you can add helper methods, do not need
-        // top put all code in this method.
+        // YOUR CODE GOES HERE - you can add helper methods, you do not need
+        // to put all code in this method.
         return -1;
     }
 
