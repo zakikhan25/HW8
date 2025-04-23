@@ -9,118 +9,97 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 /**
  *  Graph traversal exercise
  *
- *  The DirectedGraph class represents a simplified Directed Graph of vertices
- *  (nodes) and edges. The graph is stored using an adjacency list structure.
+ *  The Graph class is a representing an oversimplified Directed Graph of vertices
+ *  (nodes) and edges. The graph is stored in an adjacency list
  */
-public class DirectedGraph {
-  private int vertexCount;                // number of vertices in graph
-  private LinkedList<Integer>[] adjacencyList; // Adjacency list representation
-  private List<Integer> nodeValues;       // values stored at each vertex
-  
+public class Graph {
+  int numVertices;                  // vertices in graph
+  LinkedList[] adjListArr; // Adjacency list
+  List<Integer> vertexValues;       // vertex values
   // Constructor
-  public DirectedGraph(int vertices) {
-    this.vertexCount = vertices;
-    this.adjacencyList = new LinkedList[vertexCount];
-    this.nodeValues = new ArrayList<>(vertexCount);
-    
-    // Initialize adjacency lists and default values
-    for (int i = 0; i < vertexCount; i++) {
-      adjacencyList[i] = new LinkedList<>();
-      nodeValues.add(0);  // Default value is 0
+  public Graph(int numV) {
+    numVertices = numV;
+    adjListArr = new LinkedList[numVertices];
+    vertexValues = new ArrayList<>(numVertices);
+    for (int i = 0; i < numVertices; i++) {
+      adjListArr[i] = new LinkedList<>();
+      vertexValues.add(0);
     }
   }
-  
-  /**
-   * Sets a specific node's value.
-   * 
-   * @param nodeIndex the index of the node to modify
-   * @param value the new value to assign
+  /*
+   * method setValue
+   *
+   * Sets a vertex's (node's) value.
    */
-  public void assignValue(int nodeIndex, int value) {
-    if (nodeIndex < 0 || nodeIndex >= vertexCount) {
-      throw new IllegalArgumentException("Node index out of bounds: " + nodeIndex);
+  public void setValue(int vertexIndex, int value) {
+    if (vertexIndex >= 0 && vertexIndex < numVertices) {
+      vertexValues.set(vertexIndex, value);
+    } else {
+      throw new IllegalArgumentException(
+              "Invalid vertex index: " + vertexIndex);
     }
-    nodeValues.set(nodeIndex, value);
   }
-  
-  /**
-   * Creates a directed edge from source to destination vertex.
-   * 
-   * @param source the starting vertex
-   * @param destination the ending vertex
-   */
-  public void createEdge(int source, int destination) {
-    adjacencyList[source].add(destination);
+  public void addEdge(int src, int dest) {
+    adjListArr[src].add(dest);
   }
-  
-  /**
-   * Displays the graph as an adjacency matrix for visualization.
+  /*
+   * method printGraph
+   *
+   * Prints the graph as an adjacency matrix
    */
-  public void displayGraph() {
-    System.out.println("\nAdjacency Matrix Representation:\n");
-    
-    // Create a temporary matrix representation
-    int[][] matrix = new int[vertexCount][vertexCount];
-    for (int i = 0; i < vertexCount; i++) {
-      for (Integer dest : adjacencyList[i]) {
-        matrix[i][dest] = 1;
+  public void printGraph() {
+    System.out.println(
+            "\nAdjacency Matrix Representation:\n");
+    int[][] matrix = new int[numVertices][numVertices];
+    for (int i = 0; i < numVertices; i++) {
+      for (Object dest : adjListArr[i]) {
+        matrix[i][(int) dest] = 1;
       }
     }
-    
-    // Print column headers
     System.out.print("  ");
-    for (int i = 0; i < vertexCount; i++) {
+    for (int i = 0; i < numVertices; i++) {
       System.out.print(i + " ");
     }
     System.out.println();
-    
-    // Print matrix with row headers
-    for (int i = 0; i < vertexCount; i++) {
+    for (int i = 0; i < numVertices; i++) {
       System.out.print(i + " ");
-      for (int j = 0; j < vertexCount; j++) {
-        System.out.print((matrix[i][j] == 1) ? "| " : ". ");
+      for (int j = 0; j < numVertices; j++) {
+        if (matrix[i][j] == 1) {
+          System.out.print("| ");
+        } else {
+          System.out.print(". ");
+        }
       }
       System.out.println();
     }
   }
-  
   /**
-   * Finds the root node of the graph.
-   * 
-   * A root is defined as a node with no incoming edges.
-   * Returns the value of the root vertex if exactly one exists,
-   * or -1 if no root exists or multiple roots are found.
-   * 
-   * @return value of the root node or -1
+   * method findRoot
+   *
+   * This method returns the value of the root vertex, where root is defined in
+   * this case as a node that has no incoming edges. If no root vertex is found
+   * and/or more than one root vertex, then return -1.
    */
-  public int findRootNode() {
-    // Track incoming edge count for each vertex
-    int[] incomingEdges = new int[vertexCount];
-    
-    // Count incoming edges
-    for (int i = 0; i < vertexCount; i++) {
-      for (Integer target : adjacencyList[i]) {
-        incomingEdges[target]++;
+  public int findRoot() {
+    int[] inDegree = new int[numVertices];
+    // Count incoming edges for each vertex
+    for (int i = 0; i < numVertices; i++) {
+      for (Object neighbor : adjListArr[i]) {
+        inDegree[(int) neighbor]++;
       }
     }
-    
-    // Find vertices with no incoming edges
-    int rootVertex = -1;
-    for (int i = 0; i < vertexCount; i++) {
-      if (incomingEdges[i] == 0) {
-        // If we already found a root, this means multiple roots exist
-        if (rootVertex != -1) {
-          return -1;  // Multiple roots found
+    int root = -1; // Variable to store the root vertex
+    for (int i = 0; i < numVertices; i++) {
+      if (inDegree[i] == 0) { // Check for vertices with no incoming edges
+        if (root != -1) { // If we already found a root
+          return -1; // More than one root found
         }
-        rootVertex = i;  // First root found
+        root = i; // Set the current vertex as root
       }
     }
-    
-    // Return the value of the root or -1 if no root found
-    return (rootVertex == -1) ? -1 : nodeValues.get(rootVertex);
+    return root == -1 ? -1 : vertexValues.get(root); // Return the value of the root or -1 if none found
   }
 }
