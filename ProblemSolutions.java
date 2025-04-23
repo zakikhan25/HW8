@@ -3,7 +3,7 @@
  *   Zaki Khan / 272 001
  *
  *   This java file contains the problem solutions of canFinish and
- *   numGroups methods with a different implementation approach.
+ *   numGroups methods.
  *
  ********************************************************************/
 
@@ -14,74 +14,69 @@ public class ProblemSolutions {
     /**
      * Method canFinish
      *
-     * Determines if all courses can be completed given the prerequisites.
-     * Uses topological sorting to detect cycles in the directed graph.
+     * Determines if all exams can be completed given the prerequisites.
      *
      * @param numExams      - number of exams (nodes in graph)
      * @param prerequisites - 2D array of directed edges representing prerequisites
      * @return boolean      - True if all exams can be taken, false otherwise
      */
     public boolean canFinish(int numExams, int[][] prerequisites) {
-        // Build adjacency list for the graph
-        List<Integer>[] graph = buildDirectedGraph(numExams, prerequisites);
-        
-        // Calculate in-degree for each node
+        // Create adjacency list
+        ArrayList<Integer>[] adjList = getAdjList(numExams, prerequisites);
+
+        // Create in-degree array
         int[] inDegree = new int[numExams];
         for (int[] prereq : prerequisites) {
             int dest = prereq[0];
             inDegree[dest]++;
         }
-        
-        // Initialize queue with nodes having no incoming edges
+
+        // Add all nodes with in-degree 0 to the queue
         Queue<Integer> queue = new LinkedList<>();
         for (int i = 0; i < numExams; i++) {
             if (inDegree[i] == 0) {
-                queue.offer(i);
+                queue.add(i);
             }
         }
-        
-        // Process nodes in topological order
+
+        // Perform BFS
         int visitedCount = 0;
         while (!queue.isEmpty()) {
             int current = queue.poll();
-            visitedCount++;
-            
-            // Process all neighbors
-            for (int neighbor : graph[current]) {
+            visitedCount++; // Count the node as visited
+
+            for (int neighbor : adjList[current]) {
                 inDegree[neighbor]--;
                 if (inDegree[neighbor] == 0) {
-                    queue.offer(neighbor);
+                    queue.add(neighbor);
                 }
             }
         }
-        
-        // If we processed all nodes, there's no cycle
+
+        // If all nodes are visited, there's no cycle; otherwise, there's a cycle.
         return visitedCount == numExams;
     }
-    
+
     /**
-     * Helper method to build directed graph from edges
-     * 
+     * Method getAdjList
+     *
+     * Builds an adjacency list based on directed edges.
+     *
      * @param numNodes - number of nodes in graph (labeled 0 through n-1) for n nodes
      * @param edges    - 2-dim array of directed edges
-     * @return List<Integer>[] - adjacency list representation
+     * @return ArrayList<Integer>[] - An adjacency list representing the provided graph.
      */
-    private List<Integer>[] buildDirectedGraph(int numNodes, int[][] edges) {
-        List<Integer>[] adjacencyList = new ArrayList[numNodes];
-        
-        // Initialize all adjacency lists
+    private ArrayList<Integer>[] getAdjList(int numNodes, int[][] edges) {
+        ArrayList<Integer>[] adjList = new ArrayList[numNodes];
         for (int i = 0; i < numNodes; i++) {
-            adjacencyList[i] = new ArrayList<>();
+            adjList[i] = new ArrayList<>();
         }
-        
-        // Add edges to graph (note: reversed for prerequisites)
         for (int[] edge : edges) {
-            adjacencyList[edge[1]].add(edge[0]); // Reverse edge for prerequisites
+            adjList[edge[1]].add(edge[0]); // Reverse edge for prerequisites
         }
-        
-        return adjacencyList;
+        return adjList;
     }
-    
+
     /**
      * Method numGroups
      *
@@ -94,18 +89,17 @@ public class ProblemSolutions {
         int n = adjMatrix.length;
         boolean[] visited = new boolean[n];
         int groups = 0;
-        
-        // Find all connected components
+
         for (int i = 0; i < n; i++) {
             if (!visited[i]) {
-                groups++; // Found a new component
+                groups++; // Start a new group
                 dfs(adjMatrix, visited, i);
             }
         }
-        
+
         return groups;
     }
-    
+
     /**
      * Helper Method DFS
      *
@@ -117,10 +111,8 @@ public class ProblemSolutions {
      * @param node      - the current node being visited
      */
     private void dfs(int[][] adjMatrix, boolean[] visited, int node) {
-        // Mark current node as visited
         visited[node] = true;
-        
-        // Check all possible neighbors
+
         for (int neighbor = 0; neighbor < adjMatrix.length; neighbor++) {
             // If there's an edge in either direction (undirected graph) and the neighbor hasn't been visited
             if ((adjMatrix[node][neighbor] == 1 || adjMatrix[neighbor][node] == 1) && !visited[neighbor]) {
