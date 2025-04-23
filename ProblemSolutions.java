@@ -9,57 +9,58 @@
 
 import java.util.*;
 
-class ProblemSolutions {
+public class ProblemSolutions {
 
     /**
-     * Determines if all exams can be completed given their prerequisites
-     * @param numExams the number of exams/nodes in the graph
-     * @param prerequisites array of prerequisite pairs [a,b] meaning b must be taken before a
-     * @return true if all exams can be completed, false if there's a cycle
+     * Determines if certification exams can be completed given prerequisites
+     * @param numExams total number of exams to complete
+     * @param prerequisites array of [exam, prerequisite] pairs
+     * @return true if possible to complete all exams, false if cyclic dependency
      */
     public boolean canFinish(int numExams, int[][] prerequisites) {
+        // Build graph representation
         ArrayList<Integer>[] adj = getAdjList(numExams, prerequisites);
-        int[] inDegree = new int[numExams];
+        int[] incomingEdges = new int[numExams];
         
-        // Calculate in-degree for each node
-        for (int[] edge : prerequisites) {
-            inDegree[edge[0]]++;
+        // Calculate incoming edges for each node
+        for (int[] prereq : prerequisites) {
+            incomingEdges[prereq[0]]++;
         }
         
-        // Queue for nodes with no prerequisites
-        Queue<Integer> queue = new LinkedList<>();
-        for (int i = 0; i < numExams; i++) {
-            if (inDegree[i] == 0) {
-                queue.offer(i);
+        // Initialize queue with root nodes (no prerequisites)
+        Queue<Integer> readyQueue = new LinkedList<>();
+        for (int exam = 0; exam < numExams; exam++) {
+            if (incomingEdges[exam] == 0) {
+                readyQueue.add(exam);
             }
         }
         
-        int count = 0;
-        while (!queue.isEmpty()) {
-            int current = queue.poll();
-            count++;
+        int completedExams = 0;
+        while (!readyQueue.isEmpty()) {
+            int current = readyQueue.remove();
+            completedExams++;
             
-            // Reduce in-degree for neighbors
-            for (int neighbor : adj[current]) {
-                if (--inDegree[neighbor] == 0) {
-                    queue.offer(neighbor);
+            // Update incoming edge counts for dependents
+            for (int dependent : adj[current]) {
+                if (--incomingEdges[dependent] == 0) {
+                    readyQueue.add(dependent);
                 }
             }
         }
         
-        return count == numExams;
+        return completedExams == numExams;
     }
 
     /**
-     * Builds an adjacency list for the graph
-     * @param numNodes number of nodes in the graph
+     * Constructs adjacency list from edge list
+     * @param numNodes total nodes in graph
      * @param edges array of directed edges
-     * @return adjacency list representation of the graph
+     * @return adjacency list representation
      */
     private ArrayList<Integer>[] getAdjList(int numNodes, int[][] edges) {
         ArrayList<Integer>[] adj = new ArrayList[numNodes];
-        for (int node = 0; node < numNodes; node++) {
-            adj[node] = new ArrayList<Integer>();
+        for (int i = 0; i < numNodes; i++) {
+            adj[i] = new ArrayList<>();
         }
         for (int[] edge : edges) {
             adj[edge[1]].add(edge[0]);
@@ -68,36 +69,36 @@ class ProblemSolutions {
     }
 
     /**
-     * Counts the number of connected groups in an undirected graph
-     * @param adjMatrix adjacency matrix representation of the graph
+     * Counts connected groups in undirected graph
+     * @param adjMatrix adjacency matrix representation
      * @return number of connected components
      */
     public int numGroups(int[][] adjMatrix) {
-        int n = adjMatrix.length;
-        boolean[] visited = new boolean[n];
-        int groups = 0;
+        int groupCount = 0;
+        boolean[] visited = new boolean[adjMatrix.length];
         
-        for (int i = 0; i < n; i++) {
-            if (!visited[i]) {
-                groups++;
-                dfs(i, adjMatrix, visited);
+        for (int person = 0; person < adjMatrix.length; person++) {
+            if (!visited[person]) {
+                groupCount++;
+                exploreGroup(adjMatrix, visited, person);
             }
         }
         
-        return groups;
+        return groupCount;
     }
 
     /**
-     * Depth-first search helper for numGroups
-     * @param node current node being visited
-     * @param adjMatrix adjacency matrix of the graph
-     * @param visited array tracking visited nodes
+     * Recursively explores all connections in a group
+     * @param adjMatrix adjacency matrix
+     * @param visited tracks visited nodes
+     * @param current current node being visited
      */
-    private void dfs(int node, int[][] adjMatrix, boolean[] visited) {
-        visited[node] = true;
-        for (int neighbor = 0; neighbor < adjMatrix.length; neighbor++) {
-            if (adjMatrix[node][neighbor] == 1 && !visited[neighbor]) {
-                dfs(neighbor, adjMatrix, visited);
+    private void exploreGroup(int[][] adjMatrix, boolean[] visited, int current) {
+        visited[current] = true;
+        
+        for (int friend = 0; friend < adjMatrix.length; friend++) {
+            if (adjMatrix[current][friend] == 1 && !visited[friend]) {
+                exploreGroup(adjMatrix, visited, friend);
             }
         }
     }
